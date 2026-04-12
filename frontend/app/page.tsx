@@ -1,8 +1,12 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { adjustStock, createProduct, deleteProduct, getProducts, updateProduct } from "@/lib/api";
+import { adjustStock, createProduct, deleteProduct, getProducts, recordSale, updateProduct } from "@/lib/api";
 import { Product, ProductPayload } from "@/types/inventory";
+import SaleConfirmationModal from "@/components/SaleConfirmationModal";
+import InvoiceDisplay from "@/components/InvoiceDisplay";
+import SalesHistory from "@/components/SalesHistory";
 
 const defaultForm: ProductPayload = {
   name: "",
@@ -33,6 +37,11 @@ export default function HomePage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
+  const [saleModalOpen, setSaleModalOpen] = useState(false);
+  const [saleProduct, setSaleProduct] = useState<Product | null>(null);
+  const [saleQuantity, setSaleQuantity] = useState(1);
+  const [isProcessingSale, setIsProcessingSale] = useState(false);
+  const [lastSale, setLastSale] = useState<{ product: Product; quantity: number } | null>(null);
 
   async function loadProducts() {
     try {
@@ -94,6 +103,47 @@ export default function HomePage() {
     }
   }
 
+  async function handleSale(id: number, quantity: number) {
+    try {
+      setError("");
+      await recordSale({ productId: id, quantity });
+      await loadProducts();
+    } catch (saleError) {
+      setError(saleError instanceof Error ? saleError.message : "Sale recording failed.");
+    }
+  }
+
+  function openSaleModal(product: Product) {
+    setSaleProduct(product);
+    setSaleQuantity(1);
+    setSaleModalOpen(true);
+  }
+
+  function closeSaleModal() {
+    setSaleModalOpen(false);
+    setSaleProduct(null);
+    setSaleQuantity(1);
+  }
+
+  async function confirmSale() {
+    if (!saleProduct || saleQuantity <= 0 || saleQuantity > saleProduct.quantity) {
+      return;
+    }
+
+    try {
+      setIsProcessingSale(true);
+      setError("");
+      await recordSale({ productId: saleProduct.id, quantity: saleQuantity });
+      setLastSale({ product: saleProduct, quantity: saleQuantity });
+      closeSaleModal();
+      await loadProducts();
+    } catch (saleError) {
+      setError(saleError instanceof Error ? saleError.message : "Failed to process sale.");
+    } finally {
+      setIsProcessingSale(false);
+    }
+  }
+
   async function handleDelete(id: number) {
     const confirmed = window.confirm("Delete this product?");
     if (!confirmed) {
@@ -150,11 +200,16 @@ export default function HomePage() {
       <section className="hero">
         <div>
           <p className="eyebrow">Telecom Store Inventory</p>
-          <h1>Track stock fast from desktop, tablet, or mobile.</h1>
+          <h2>Track stock fast from desktop, tablet, or mobile.</h2>
           <p className="hero-copy">
             Search by product name or barcode, update quantity with one tap, and keep
             low-stock items visible before they run out.
           </p>
+          <div className="hero-actions">
+            <Link className="primary-btn" href="/dashboard">
+              View dashboard
+            </Link>
+          </div>
         </div>
         <div className="hero-stats">
           <article>
@@ -233,8 +288,8 @@ export default function HomePage() {
               <span>Available Quantity</span>
               <strong>{featuredProduct.quantity}</strong>
               <div className="quick-actions">
-                <button type="button" onClick={() => handleAdjust(featuredProduct.id, -1)}>
-                  -1
+                <button type="button" onClick={() => openSaleModal(featuredProduct)}>
+                  Sell
                 </button>
                 <button type="button" onClick={() => handleAdjust(featuredProduct.id, 1)}>
                   +1
@@ -402,8 +457,8 @@ export default function HomePage() {
                       <td>{formatDate(product.updatedAt)}</td>
                       <td>
                         <div className="row-actions">
-                          <button type="button" onClick={() => handleAdjust(product.id, -1)}>
-                            -1
+                          <button type="button" onClick={() => openSaleModal(product)}>
+                            Sell
                           </button>
                           <button type="button" onClick={() => handleAdjust(product.id, 1)}>
                             +1
@@ -424,6 +479,20 @@ export default function HomePage() {
           </div>
         </section>
       </section>
+
+      {lastSale ? <InvoiceDisplay product={lastSale.product} quantity={lastSale.quantity} /> : null}
+
+      <SalesHistory />
+
+      <SaleConfirmationModal
+        isOpen={saleModalOpen}
+        product={saleProduct}
+        initialQuantity={saleQuantity}
+        onQuantityChange={setSaleQuantity}
+        onConfirm={confirmSale}
+        onCancel={closeSaleModal}
+        isProcessing={isProcessingSale}
+      />
     </main>
   );
 }

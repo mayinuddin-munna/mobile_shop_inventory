@@ -41,6 +41,16 @@ function parseOptionalNumber(value) {
   return Number.isNaN(parsed) ? null : parsed;
 }
 
+function buildTimestamp(date) {
+  const year = date.getUTCFullYear();
+  const month = String(date.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(date.getUTCDate()).padStart(2, "0");
+  const hours = String(date.getUTCHours()).padStart(2, "0");
+  const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+  const seconds = String(date.getUTCSeconds()).padStart(2, "0");
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+}
+
 function getSortClause(sort) {
   switch (sort) {
     case "name_desc":
@@ -253,6 +263,132 @@ app.post("/api/products/:id/adjust", async (request, response) => {
     response.json(await fetchProductById(id));
   } catch (error) {
     response.status(500).json({ message: "Failed to adjust stock." });
+  }
+});
+
+app.post("/api/sales", async (request, response) => {
+  try {
+    const productId = Number(request.body.productId);
+    const quantity = Number(request.body.quantity);
+
+    if (Number.isNaN(productId) || productId <= 0) {
+      response.status(400).json({ message: "Product ID is required." });
+      return;
+    }
+
+    if (Number.isNaN(quantity) || quantity <= 0) {
+      response.status(400).json({ message: "Quantity must be a positive number." });
+      return;
+    }
+
+    const existing = await fetchProductById(productId);
+    if (!existing) {
+      response.status(404).json({ message: "Product not found." });
+      return;
+    }
+
+    if (quantity > existing.quantity) {
+      response.status(400).json({ message: "Not enough stock available." });
+      return;
+    }
+
+    const priceAtSale = existing.price ?? 0;
+    const total = priceAtSale * quantity;
+
+    const result = await run(
+      `
+        INSERT INTO sales (product_id, quantity, price_at_sale, total)
+        VALUES (?, ?, ?, ?)
+      `,
+      [productId, quantity, priceAtSale, total]
+    );
+
+    await run(
+      `
+        UPDATE products
+        SET quantity = ?, updated_at = CURRENT_TIMESTAMP
+        WHERE id = ?
+      `,
+      [existing.quantity - quantity, productId]
+    );
+
+    response.status(201).json({
+      id: result.id,
+      productId,
+      quantity,
+      priceAtSale,
+      total,
+      createdAt: buildTimestamp(new Date())
+    });
+  } catch (error) {
+    response.status(500).json({ message: "Failed to record sale." });
+  }
+});
+
+app.get("/api/sales/report", async (request, response) => {
+  try {
+    const now = new Date();
+    const todayStart = buildTimestamp(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate(), 0, 0, 0)));
+    const weekStart = buildTimestamp(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate() - 6, 0, 0, 0)));
+    const monthStart = buildTimestamp(new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1, 0, 0, 0)));
+    const yearStart = buildTimestamp(new Date(Date.UTC(now.getUTCFullYear(), 0, 1, 0, 0, 0)));
+
+    const report = await get(
+      `
+        SELECT
+          IFNULL(SUM(CASE WHEN created_at >= ? THEN total END), 0) AS todayTotal,
+          IFNULL(SUM(CASE WHEN created_at >= ? THEN total END), 0) AS weekTotal,
+          IFNULL(SUM(CASE WHEN created_at >= ? THEN total END), 0) AS monthTotal,
+          IFNULL(SUM(CASE WHEN created_at >= ? THEN total END), 0) AS yearTotal,
+          IFNULL(SUM(CASE WHEN created_at >= ? THEN quantity END), 0) AS todayUnits,
+          IFNULL(SUM(CASE WHEN created_at >= ? THEN quantity END), 0) AS weekUnits,
+          IFNULL(SUM(CASE WHEN created_at >= ? THEN quantity END), 0) AS monthUnits,
+          IFNULL(SUM(CASE WHEN created_at >= ? THEN quantity END), 0) AS yearUnits
+        FROM sales
+      `,
+      [todayStart, weekStart, monthStart, yearStart, todayStart, weekStart, monthStart, yearStart]
+    );
+
+    response.json(report);
+  } catch (error) {
+    response.status(500).json({ message: "Failed to load sales report." });
+  }
+});
+
+app.get("/api/sales/history", async (request, response) => {
+  try {
+    const limit = Number(request.query.limit || 50);
+    const offset = Number(request.query.offset || 0);
+
+    const rows = await all(
+      `
+        SELECT
+          s.id,
+          s.product_id,
+          s.quantity,
+          s.price_at_sale,
+          s.total,
+          s.created_at,
+          p.name as product_name,
+          p.barcode
+        FROM sales s
+        LEFT JOIN products p ON s.product_id = p.id
+        ORDER BY s.created_at DESC
+        LIMIT ? OFFSET ?
+      `,
+      [limit, offset]
+    );
+
+    const countResult = await get("SELECT COUNT(*) as total FROM sales");
+
+    response.json({
+      sales: rows,
+      total: countResult.total,
+      limit,
+      offset
+    });
+  } catch (error) {
+    response.status(500).json({ message: "Failed to load sales history." });
   }
 });
 

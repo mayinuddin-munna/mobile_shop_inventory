@@ -1,4 +1,4 @@
-import { Product, ProductPayload } from "@/types/inventory";
+import { Product, ProductPayload, SalePayload, SalesReport, SalesHistory } from "@/types/inventory";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:4000/api";
@@ -73,6 +73,21 @@ export function adjustStock(id: number, delta: number) {
     method: "POST",
     body: JSON.stringify({ delta })
   });
+}
+
+export function recordSale(payload: SalePayload) {
+  return request<void>("/sales", {
+    method: "POST",
+    body: JSON.stringify(payload)
+  });
+}
+
+export function getSalesReport() {
+  return request<SalesReport>("/sales/report");
+}
+
+export function getSalesHistory(limit: number = 50, offset: number = 0) {
+  return request<SalesHistory>(`/sales/history?limit=${limit}&offset=${offset}`);
 }
 
 export function deleteProduct(id: number) {

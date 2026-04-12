@@ -35,6 +35,28 @@ export function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_products_quantity
       ON products(quantity)
     `);
+
+    db.run(`
+      CREATE TABLE IF NOT EXISTS sales (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        product_id INTEGER NOT NULL,
+        quantity INTEGER NOT NULL,
+        price_at_sale REAL,
+        total REAL NOT NULL,
+        created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY(product_id) REFERENCES products(id)
+      )
+    `);
+
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_sales_created_at
+      ON sales(created_at)
+    `);
+
+    db.run(`
+      CREATE INDEX IF NOT EXISTS idx_sales_product_id
+      ON sales(product_id)
+    `);
   });
 }
 
