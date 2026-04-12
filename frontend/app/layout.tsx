@@ -22,6 +22,7 @@ export default function RootLayout({
             </Link>
             <nav className="nav-links">
               <Link href="/">Inventory</Link>
+              <Link href="/sales">Sales</Link>
               <Link href="/dashboard">Dashboard</Link>
             </nav>
           </div>

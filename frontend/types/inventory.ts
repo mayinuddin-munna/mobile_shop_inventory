@@ -22,6 +22,10 @@ export type ProductPayload = {
 export type SalePayload = {
   productId: number;
   quantity: number;
+  customerName?: string;
+  customerPhone?: string;
+  customerEmail?: string;
+  customerAddress?: string;
 };
 
 export type SalesReport = {
@@ -43,6 +47,10 @@ export type SalesHistoryItem = {
   quantity: number;
   price_at_sale: number;
   total: number;
+  customer_name: string | null;
+  customer_phone: string | null;
+  customer_email: string | null;
+  customer_address: string | null;
   created_at: string;
 };
 

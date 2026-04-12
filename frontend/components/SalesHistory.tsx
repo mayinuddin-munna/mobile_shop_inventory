@@ -43,7 +43,7 @@ export default function SalesHistory() {
     <section className="panel sales-history-section">
       <div className="section-heading">
         <div>
-          <p className="eyebrow">Sales Records</p>
+          <p className="eyebrow">Sales Recordsasdasd</p>
           <h2>Seller - All sales history</h2>
         </div>
         <div className="history-stats">

@@ -2,9 +2,18 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useState } from "react";
-import { adjustStock, createProduct, deleteProduct, getProducts, recordSale, updateProduct } from "@/lib/api";
+import {
+  adjustStock,
+  createProduct,
+  deleteProduct,
+  getProducts,
+  recordSale,
+  updateProduct,
+} from "@/lib/api";
 import { Product, ProductPayload } from "@/types/inventory";
-import SaleConfirmationModal from "@/components/SaleConfirmationModal";
+import SaleConfirmationModal, {
+  CustomerInfo,
+} from "@/components/SaleConfirmationModal";
 import InvoiceDisplay from "@/components/InvoiceDisplay";
 import SalesHistory from "@/components/SalesHistory";
 
@@ -14,7 +23,7 @@ const defaultForm: ProductPayload = {
   quantity: 0,
   price: "",
   category: "",
-  lowStockThreshold: 3
+  lowStockThreshold: 3,
 };
 
 const categories = ["Mobile", "SIM", "Accessory", "Charger", "Cable", "Other"];
@@ -22,7 +31,7 @@ const categories = ["Mobile", "SIM", "Accessory", "Charger", "Cable", "Other"];
 function formatDate(value: string) {
   return new Intl.DateTimeFormat("en-BD", {
     dateStyle: "medium",
-    timeStyle: "short"
+    timeStyle: "short",
   }).format(new Date(value));
 }
 
@@ -41,7 +50,14 @@ export default function HomePage() {
   const [saleProduct, setSaleProduct] = useState<Product | null>(null);
   const [saleQuantity, setSaleQuantity] = useState(1);
   const [isProcessingSale, setIsProcessingSale] = useState(false);
-  const [lastSale, setLastSale] = useState<{ product: Product; quantity: number } | null>(null);
+  const [lastSale, setLastSale] = useState<{
+    product: Product;
+    quantity: number;
+    customerName: string;
+    customerPhone: string;
+    customerEmail: string;
+    customerAddress: string;
+  } | null>(null);
 
   async function loadProducts() {
     try {
@@ -51,11 +67,15 @@ export default function HomePage() {
         query: search.trim(),
         sort,
         lowStockOnly,
-        threshold
+        threshold,
       });
       setProducts(data);
     } catch (loadError) {
-      setError(loadError instanceof Error ? loadError.message : "Failed to load products.");
+      setError(
+        loadError instanceof Error
+          ? loadError.message
+          : "Failed to load products.",
+      );
     } finally {
       setLoading(false);
     }
@@ -87,7 +107,11 @@ export default function HomePage() {
       setEditingId(null);
       await loadProducts();
     } catch (saveError) {
-      setError(saveError instanceof Error ? saveError.message : "Failed to save product.");
+      setError(
+        saveError instanceof Error
+          ? saveError.message
+          : "Failed to save product.",
+      );
     } finally {
       setSaving(false);
     }
@@ -99,7 +123,11 @@ export default function HomePage() {
       await adjustStock(id, delta);
       await loadProducts();
     } catch (adjustError) {
-      setError(adjustError instanceof Error ? adjustError.message : "Stock update failed.");
+      setError(
+        adjustError instanceof Error
+          ? adjustError.message
+          : "Stock update failed.",
+      );
     }
   }
 
@@ -109,7 +137,11 @@ export default function HomePage() {
       await recordSale({ productId: id, quantity });
       await loadProducts();
     } catch (saleError) {
-      setError(saleError instanceof Error ? saleError.message : "Sale recording failed.");
+      setError(
+        saleError instanceof Error
+          ? saleError.message
+          : "Sale recording failed.",
+      );
     }
   }
 
@@ -125,20 +157,42 @@ export default function HomePage() {
     setSaleQuantity(1);
   }
 
-  async function confirmSale() {
-    if (!saleProduct || saleQuantity <= 0 || saleQuantity > saleProduct.quantity) {
+  async function confirmSale(customerInfo: CustomerInfo) {
+    if (
+      !saleProduct ||
+      saleQuantity <= 0 ||
+      saleQuantity > saleProduct.quantity
+    ) {
       return;
     }
 
     try {
       setIsProcessingSale(true);
       setError("");
-      await recordSale({ productId: saleProduct.id, quantity: saleQuantity });
-      setLastSale({ product: saleProduct, quantity: saleQuantity });
+      await recordSale({
+        productId: saleProduct.id,
+        quantity: saleQuantity,
+        customerName: customerInfo.name,
+        customerPhone: customerInfo.phone,
+        customerEmail: customerInfo.email,
+        customerAddress: customerInfo.address,
+      });
+      setLastSale({
+        product: saleProduct,
+        quantity: saleQuantity,
+        customerName: customerInfo.name,
+        customerPhone: customerInfo.phone,
+        customerEmail: customerInfo.email,
+        customerAddress: customerInfo.address,
+      });
       closeSaleModal();
       await loadProducts();
     } catch (saleError) {
-      setError(saleError instanceof Error ? saleError.message : "Failed to process sale.");
+      setError(
+        saleError instanceof Error
+          ? saleError.message
+          : "Failed to process sale.",
+      );
     } finally {
       setIsProcessingSale(false);
     }
@@ -155,7 +209,9 @@ export default function HomePage() {
       await deleteProduct(id);
       await loadProducts();
     } catch (deleteError) {
-      setError(deleteError instanceof Error ? deleteError.message : "Delete failed.");
+      setError(
+        deleteError instanceof Error ? deleteError.message : "Delete failed.",
+      );
     }
   }
 
@@ -167,7 +223,7 @@ export default function HomePage() {
       quantity: product.quantity,
       price: product.price ?? "",
       category: product.category,
-      lowStockThreshold: product.lowStockThreshold
+      lowStockThreshold: product.lowStockThreshold,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
@@ -185,14 +241,14 @@ export default function HomePage() {
       featuredProduct =
         products.find((product) => product.barcode === search.trim()) ||
         products.find((product) =>
-          product.name.toLowerCase().includes(search.trim().toLowerCase())
+          product.name.toLowerCase().includes(search.trim().toLowerCase()),
         ) ||
         products[0];
     }
   }
 
   const lowStockCount = products.filter(
-    (product) => product.quantity <= product.lowStockThreshold
+    (product) => product.quantity <= product.lowStockThreshold,
   ).length;
 
   return (
@@ -202,8 +258,8 @@ export default function HomePage() {
           <p className="eyebrow">Telecom Store Inventory</p>
           <h2>Track stock fast from desktop, tablet, or mobile.</h2>
           <p className="hero-copy">
-            Search by product name or barcode, update quantity with one tap, and keep
-            low-stock items visible before they run out.
+            Search by product name or barcode, update quantity with one tap, and
+            keep low-stock items visible before they run out.
           </p>
           <div className="hero-actions">
             <Link className="primary-btn" href="/dashboard">
@@ -236,7 +292,10 @@ export default function HomePage() {
 
           <label className="field compact">
             <span>Sort</span>
-            <select value={sort} onChange={(event) => setSort(event.target.value)}>
+            <select
+              value={sort}
+              onChange={(event) => setSort(event.target.value)}
+            >
               <option value="name_asc">Name A-Z</option>
               <option value="name_desc">Name Z-A</option>
               <option value="quantity_asc">Low stock first</option>
@@ -266,7 +325,9 @@ export default function HomePage() {
               type="number"
               min="0"
               value={threshold}
-              onChange={(event) => setThreshold(Number(event.target.value) || 0)}
+              onChange={(event) =>
+                setThreshold(Number(event.target.value) || 0)
+              }
             />
           </label>
         </div>
@@ -274,7 +335,9 @@ export default function HomePage() {
         {featuredProduct ? (
           <article
             className={`featured-card ${
-              featuredProduct.quantity <= featuredProduct.lowStockThreshold ? "alert" : ""
+              featuredProduct.quantity <= featuredProduct.lowStockThreshold
+                ? "alert"
+                : ""
             }`}
           >
             <div>
@@ -288,13 +351,28 @@ export default function HomePage() {
               <span>Available Quantity</span>
               <strong>{featuredProduct.quantity}</strong>
               <div className="quick-actions">
-                <button type="button" onClick={() => openSaleModal(featuredProduct)}>
+                <button
+                  type="button"
+                  onClick={() => openSaleModal(featuredProduct)}
+                  disabled={featuredProduct.quantity === 0}
+                  title={
+                    featuredProduct.quantity === 0
+                      ? "Cannot sell when stock is empty"
+                      : "Sell product"
+                  }
+                >
                   Sell
                 </button>
-                <button type="button" onClick={() => handleAdjust(featuredProduct.id, 1)}>
+                <button
+                  type="button"
+                  onClick={() => handleAdjust(featuredProduct.id, 1)}
+                >
                   +1
                 </button>
-                <button type="button" onClick={() => handleAdjust(featuredProduct.id, 5)}>
+                <button
+                  type="button"
+                  onClick={() => handleAdjust(featuredProduct.id, 5)}
+                >
                   +5
                 </button>
               </div>
@@ -314,8 +392,12 @@ export default function HomePage() {
         <form className="panel product-form" onSubmit={handleSaveProduct}>
           <div className="section-heading">
             <div>
-              <p className="eyebrow">{editingId ? "Edit Product" : "New Product"}</p>
-              <h2>{editingId ? "Update inventory item" : "Add item to inventory"}</h2>
+              <p className="eyebrow">
+                {editingId ? "Edit Product" : "New Product"}
+              </p>
+              <h2>
+                {editingId ? "Update inventory item" : "Add item to inventory"}
+              </h2>
             </div>
             {editingId ? (
               <button className="ghost-btn" type="button" onClick={resetForm}>
@@ -331,7 +413,10 @@ export default function HomePage() {
                 required
                 value={form.name}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, name: event.target.value }))
+                  setForm((current) => ({
+                    ...current,
+                    name: event.target.value,
+                  }))
                 }
               />
             </label>
@@ -341,7 +426,10 @@ export default function HomePage() {
               <input
                 value={form.barcode}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, barcode: event.target.value }))
+                  setForm((current) => ({
+                    ...current,
+                    barcode: event.target.value,
+                  }))
                 }
               />
             </label>
@@ -356,7 +444,7 @@ export default function HomePage() {
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    quantity: Number(event.target.value)
+                    quantity: Number(event.target.value),
                   }))
                 }
               />
@@ -372,7 +460,10 @@ export default function HomePage() {
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    price: event.target.value === "" ? "" : Number(event.target.value)
+                    price:
+                      event.target.value === ""
+                        ? ""
+                        : Number(event.target.value),
                   }))
                 }
               />
@@ -383,7 +474,10 @@ export default function HomePage() {
               <select
                 value={form.category}
                 onChange={(event) =>
-                  setForm((current) => ({ ...current, category: event.target.value }))
+                  setForm((current) => ({
+                    ...current,
+                    category: event.target.value,
+                  }))
                 }
               >
                 <option value="">Select category</option>
@@ -404,15 +498,23 @@ export default function HomePage() {
                 onChange={(event) =>
                   setForm((current) => ({
                     ...current,
-                    lowStockThreshold: Number(event.target.value)
+                    lowStockThreshold: Number(event.target.value),
                   }))
                 }
               />
             </label>
           </div>
 
-          <button className="primary-btn full-width" type="submit" disabled={saving}>
-            {saving ? "Saving..." : editingId ? "Update Product" : "Add Product"}
+          <button
+            className="primary-btn full-width"
+            type="submit"
+            disabled={saving}
+          >
+            {saving
+              ? "Saving..."
+              : editingId
+                ? "Update Product"
+                : "Add Product"}
           </button>
         </form>
 
@@ -422,7 +524,11 @@ export default function HomePage() {
               <p className="eyebrow">Inventory List</p>
               <h2>All products</h2>
             </div>
-            <button className="ghost-btn" type="button" onClick={() => void loadProducts()}>
+            <button
+              className="ghost-btn"
+              type="button"
+              onClick={() => void loadProducts()}
+            >
               Refresh
             </button>
           </div>
@@ -446,10 +552,15 @@ export default function HomePage() {
                   const isLow = product.quantity <= product.lowStockThreshold;
 
                   return (
-                    <tr key={product.id} className={isLow ? "low-stock-row" : ""}>
+                    <tr
+                      key={product.id}
+                      className={isLow ? "low-stock-row" : ""}
+                    >
                       <td>
                         <strong>{product.name}</strong>
-                        {product.price !== null ? <span>Tk {product.price}</span> : null}
+                        {product.price !== null ? (
+                          <span>Tk {product.price}</span>
+                        ) : null}
                       </td>
                       <td>{product.barcode || "N/A"}</td>
                       <td>{product.quantity}</td>
@@ -457,16 +568,34 @@ export default function HomePage() {
                       <td>{formatDate(product.updatedAt)}</td>
                       <td>
                         <div className="row-actions">
-                          <button type="button" onClick={() => openSaleModal(product)}>
+                          <button
+                            type="button"
+                            onClick={() => openSaleModal(product)}
+                            disabled={product.quantity === 0}
+                            title={
+                              product.quantity === 0
+                                ? "Cannot sell when stock is empty"
+                                : "Sell product"
+                            }
+                          >
                             Sell
                           </button>
-                          <button type="button" onClick={() => handleAdjust(product.id, 1)}>
+                          <button
+                            type="button"
+                            onClick={() => handleAdjust(product.id, 1)}
+                          >
                             +1
                           </button>
-                          <button type="button" onClick={() => startEdit(product)}>
+                          <button
+                            type="button"
+                            onClick={() => startEdit(product)}
+                          >
                             Edit
                           </button>
-                          <button type="button" onClick={() => handleDelete(product.id)}>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(product.id)}
+                          >
                             Delete
                           </button>
                         </div>
@@ -480,9 +609,16 @@ export default function HomePage() {
         </section>
       </section>
 
-      {lastSale ? <InvoiceDisplay product={lastSale.product} quantity={lastSale.quantity} /> : null}
-
-      <SalesHistory />
+      {lastSale ? (
+        <InvoiceDisplay
+          product={lastSale.product}
+          quantity={lastSale.quantity}
+          customerName={lastSale.customerName}
+          customerPhone={lastSale.customerPhone}
+          customerEmail={lastSale.customerEmail}
+          customerAddress={lastSale.customerAddress}
+        />
+      ) : null}
 
       <SaleConfirmationModal
         isOpen={saleModalOpen}

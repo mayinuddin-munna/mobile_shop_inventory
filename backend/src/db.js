@@ -43,6 +43,10 @@ export function initializeDatabase() {
         quantity INTEGER NOT NULL,
         price_at_sale REAL,
         total REAL NOT NULL,
+        customer_name TEXT,
+        customer_phone TEXT,
+        customer_email TEXT,
+        customer_address TEXT,
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY(product_id) REFERENCES products(id)
       )
@@ -57,6 +61,34 @@ export function initializeDatabase() {
       CREATE INDEX IF NOT EXISTS idx_sales_product_id
       ON sales(product_id)
     `);
+
+    // Add missing columns to existing sales table
+    db.all("PRAGMA table_info(sales)", (err, columns) => {
+      if (err) {
+        console.error("Error checking sales table:", err);
+        return;
+      }
+
+      const columnNames = columns.map((col) => col.name);
+      const missingColumns = [
+        { name: "customer_name", type: "TEXT" },
+        { name: "customer_phone", type: "TEXT" },
+        { name: "customer_email", type: "TEXT" },
+        { name: "customer_address", type: "TEXT" }
+      ];
+
+      missingColumns.forEach((col) => {
+        if (!columnNames.includes(col.name)) {
+          db.run(`ALTER TABLE sales ADD COLUMN ${col.name} ${col.type}`, (alterErr) => {
+            if (alterErr) {
+              console.error(`Error adding column ${col.name}:`, alterErr);
+            } else {
+              console.log(`Added column ${col.name} to sales table`);
+            }
+          });
+        }
+      });
+    });
   });
 }
 

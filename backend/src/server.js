@@ -78,6 +78,17 @@ app.get("/api/health", (_request, response) => {
   response.json({ ok: true });
 });
 
+app.get("/api/debug/schema", async (_request, response) => {
+  try {
+    const salesSchema = await get(
+      "SELECT sql FROM sqlite_master WHERE type='table' AND name='sales'"
+    );
+    response.json({ salesSchema });
+  } catch (error) {
+    response.status(500).json({ message: "Failed to fetch schema." });
+  }
+});
+
 app.get("/api/products", async (request, response) => {
   try {
     const query = (request.query.query || "").trim();
@@ -270,6 +281,10 @@ app.post("/api/sales", async (request, response) => {
   try {
     const productId = Number(request.body.productId);
     const quantity = Number(request.body.quantity);
+    const customerName = String(request.body.customerName || "").trim() || null;
+    const customerPhone = String(request.body.customerPhone || "").trim() || null;
+    const customerEmail = String(request.body.customerEmail || "").trim() || null;
+    const customerAddress = String(request.body.customerAddress || "").trim() || null;
 
     if (Number.isNaN(productId) || productId <= 0) {
       response.status(400).json({ message: "Product ID is required." });
@@ -297,10 +312,12 @@ app.post("/api/sales", async (request, response) => {
 
     const result = await run(
       `
-        INSERT INTO sales (product_id, quantity, price_at_sale, total)
-        VALUES (?, ?, ?, ?)
+        INSERT INTO sales (
+          product_id, quantity, price_at_sale, total,
+          customer_name, customer_phone, customer_email, customer_address
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
       `,
-      [productId, quantity, priceAtSale, total]
+      [productId, quantity, priceAtSale, total, customerName, customerPhone, customerEmail, customerAddress]
     );
 
     await run(
@@ -318,10 +335,15 @@ app.post("/api/sales", async (request, response) => {
       quantity,
       priceAtSale,
       total,
+      customerName,
+      customerPhone,
+      customerEmail,
+      customerAddress,
       createdAt: buildTimestamp(new Date())
     });
   } catch (error) {
-    response.status(500).json({ message: "Failed to record sale." });
+    console.error("Sales error:", error);
+    response.status(500).json({ message: "Failed to record sale: " + (error.message || "Unknown error") });
   }
 });
 
@@ -368,6 +390,10 @@ app.get("/api/sales/history", async (request, response) => {
           s.quantity,
           s.price_at_sale,
           s.total,
+          s.customer_name,
+          s.customer_phone,
+          s.customer_email,
+          s.customer_address,
           s.created_at,
           p.name as product_name,
           p.barcode
