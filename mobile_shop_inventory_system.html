@@ -1,0 +1,784 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--surface-0);color:var(--text-primary)}
+.app{display:flex;height:100vh;min-height:600px;overflow:hidden}
+.sidebar{width:220px;flex-shrink:0;background:var(--surface-1);border-right:0.5px solid var(--border);display:flex;flex-direction:column;overflow:hidden}
+.logo{padding:18px 16px 14px;border-bottom:0.5px solid var(--border)}
+.logo-title{font-size:15px;font-weight:500;color:var(--text-primary)}
+.logo-sub{font-size:11px;color:var(--text-muted);margin-top:2px}
+.nav{padding:10px 8px;flex:1;overflow-y:auto}
+.nav-section{font-size:10px;font-weight:500;color:var(--text-muted);padding:8px 8px 4px;text-transform:uppercase;letter-spacing:0.08em}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:var(--radius);cursor:pointer;font-size:13px;color:var(--text-secondary);margin-bottom:1px;transition:all .15s}
+.nav-item:hover{background:var(--surface-2);color:var(--text-primary)}
+.nav-item.active{background:var(--bg-accent);color:var(--text-accent)}
+.nav-item i{font-size:16px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:var(--bg-danger);color:var(--text-danger);font-size:10px;font-weight:500;padding:1px 6px;border-radius:99px}
+.nav-badge.warn{background:var(--bg-warning);color:var(--text-warning)}
+.sidebar-footer{padding:12px 8px;border-top:0.5px solid var(--border)}
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.topbar{padding:0 20px;height:52px;display:flex;align-items:center;gap:12px;border-bottom:0.5px solid var(--border);background:var(--surface-2);flex-shrink:0}
+.topbar-title{font-size:15px;font-weight:500;flex:1}
+.search-wrap{position:relative}
+.search-wrap i{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:15px;color:var(--text-muted);pointer-events:none}
+.search-wrap input{padding:6px 10px 6px 32px;border:0.5px solid var(--border);border-radius:var(--radius);background:var(--surface-1);font-size:13px;color:var(--text-primary);width:200px}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:var(--radius);font-size:13px;cursor:pointer;font-weight:500;border:0.5px solid var(--border-strong);background:var(--surface-2);color:var(--text-primary);transition:all .15s}
+.btn:hover{background:var(--surface-1)}
+.btn.primary{background:var(--fill-accent);color:var(--on-accent);border-color:transparent}
+.btn.primary:hover{background:var(--fill-accent-hover)}
+.btn.danger{background:var(--bg-danger);color:var(--text-danger);border-color:var(--border-danger)}
+.content{flex:1;overflow-y:auto;padding:20px}
+.page{display:none}
+.page.active{display:block}
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface-1);border-radius:var(--radius);padding:14px 16px}
+.stat-label{font-size:11px;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px}
+.stat-value{font-size:24px;font-weight:500;color:var(--text-primary)}
+.stat-sub{font-size:12px;color:var(--text-secondary);margin-top:4px}
+.stat-sub.up{color:var(--text-success)}
+.stat-sub.down{color:var(--text-danger)}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.section-title{font-size:14px;font-weight:500}
+.card{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:16px}
+.card-header{padding:12px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;gap:8px}
+.card-title{font-size:13px;font-weight:500}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;padding:9px 12px;font-size:11px;font-weight:500;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.06em;border-bottom:0.5px solid var(--border)}
+td{padding:10px 12px;border-bottom:0.5px solid var(--border);color:var(--text-primary)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--surface-1)}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:99px;font-size:11px;font-weight:500}
+.badge.success{background:var(--bg-success);color:var(--text-success)}
+.badge.warning{background:var(--bg-warning);color:var(--text-warning)}
+.badge.danger{background:var(--bg-danger);color:var(--text-danger)}
+.badge.accent{background:var(--bg-accent);color:var(--text-accent)}
+.badge.neutral{background:var(--surface-1);color:var(--text-secondary);border:0.5px solid var(--border)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.alert-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:0.5px solid var(--border)}
+.alert-item:last-child{border-bottom:none}
+.alert-icon{width:32px;height:32px;border-radius:var(--radius);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.alert-icon.warn{background:var(--bg-warning)}
+.alert-icon.danger{background:var(--bg-danger)}
+.alert-icon i{font-size:16px}
+.alert-icon.warn i{color:var(--text-warning)}
+.alert-icon.danger i{color:var(--text-danger)}
+.alert-text{flex:1}
+.alert-name{font-size:13px;font-weight:500}
+.alert-sub{font-size:12px;color:var(--text-muted)}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;padding:16px}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group.full{grid-column:1/-1}
+label{font-size:12px;color:var(--text-secondary);font-weight:500}
+input,select,textarea{padding:8px 10px;border:0.5px solid var(--border);border-radius:var(--radius);font-size:13px;color:var(--text-primary);background:var(--surface-1);width:100%}
+input:focus,select:focus{outline:none;border-color:var(--border-accent)}
+.form-actions{padding:12px 16px;border-top:0.5px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+.tabs{display:flex;gap:2px;padding:4px;background:var(--surface-1);border-radius:var(--radius);margin-bottom:16px;border:0.5px solid var(--border)}
+.tab{padding:6px 14px;border-radius:6px;font-size:13px;cursor:pointer;color:var(--text-secondary);transition:all .15s}
+.tab.active{background:var(--surface-2);color:var(--text-primary);font-weight:500}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;align-items:center}
+.filter-row select{width:auto;min-width:130px}
+.qty-ctrl{display:flex;align-items:center;gap:4px}
+.qty-btn{width:24px;height:24px;border-radius:4px;border:0.5px solid var(--border);background:var(--surface-1);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;color:var(--text-primary)}
+.qty-btn:hover{background:var(--surface-2)}
+.qty-val{width:36px;text-align:center;font-size:13px;font-weight:500}
+.sale-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:0.5px solid var(--border)}
+.sale-info{flex:1}
+.sale-name{font-size:13px;font-weight:500}
+.sale-sku{font-size:11px;color:var(--text-muted)}
+.sale-price{font-size:13px;font-weight:500;color:var(--text-accent)}
+.sale-total{text-align:right;font-size:13px;font-weight:500}
+.pos-right{display:flex;flex-direction:column;gap:0}
+.pos-summary{padding:14px 16px}
+.pos-row{display:flex;justify-content:space-between;font-size:13px;padding:3px 0;color:var(--text-secondary)}
+.pos-row.total{font-size:15px;font-weight:500;color:var(--text-primary);border-top:0.5px solid var(--border);margin-top:8px;padding-top:10px}
+.pos-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.pos-layout{display:grid;grid-template-columns:1fr 320px;gap:16px}
+.product-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.product-tile{background:var(--surface-2);border:0.5px solid var(--border);border-radius:var(--radius);padding:12px;cursor:pointer;transition:all .15s}
+.product-tile:hover{border-color:var(--border-accent);background:var(--bg-accent)}
+.product-tile-name{font-size:13px;font-weight:500;margin-bottom:4px}
+.product-tile-sku{font-size:11px;color:var(--text-muted);margin-bottom:6px}
+.product-tile-price{font-size:14px;font-weight:500;color:var(--text-accent)}
+.product-tile-stock{font-size:11px;color:var(--text-secondary);margin-top:4px}
+.empty-state{text-align:center;padding:40px 20px;color:var(--text-muted)}
+.empty-state i{font-size:40px;display:block;margin-bottom:10px}
+.empty-state p{font-size:13px}
+.tag{display:inline-block;font-size:11px;padding:1px 7px;background:var(--surface-1);border:0.5px solid var(--border);border-radius:99px;color:var(--text-secondary)}
+.progress-bar{height:6px;background:var(--surface-1);border-radius:99px;overflow:hidden;margin-top:4px}
+.progress-fill{height:100%;border-radius:99px;background:var(--fill-accent)}
+.progress-fill.warn{background:#EF9F27}
+.progress-fill.danger{background:#E24B4A}
+.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100;align-items:center;justify-content:center}
+.modal-bg.open{display:flex}
+.modal{background:var(--surface-2);border:0.5px solid var(--border);border-radius:12px;width:520px;max-height:80vh;overflow-y:auto}
+.modal-header{padding:14px 16px;border-bottom:0.5px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-size:14px;font-weight:500}
+.close-btn{background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-muted);padding:2px 6px}
+.chip-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.chip{padding:4px 10px;border-radius:99px;font-size:12px;cursor:pointer;border:0.5px solid var(--border);background:var(--surface-1);color:var(--text-secondary)}
+.chip.active{background:var(--bg-accent);color:var(--text-accent);border-color:var(--border-accent)}
+.receipt-line{display:flex;justify-content:space-between;font-size:13px;padding:4px 0;border-bottom:0.5px solid var(--border)}
+.receipt-line:last-child{border:none;font-weight:500}
+</style>
+
+<h2 class="sr-only">Mobile shop inventory and POS management system</h2>
+
+<div class="app">
+  <div class="sidebar">
+    <div class="logo">
+      <div style="display:flex;align-items:center;gap:8px">
+        <div style="width:28px;height:28px;background:var(--fill-accent);border-radius:6px;display:flex;align-items:center;justify-content:center">
+          <i class="ti ti-device-mobile" style="font-size:16px;color:var(--on-accent)" aria-hidden="true"></i>
+        </div>
+        <div>
+          <div class="logo-title">MobilePoint</div>
+          <div class="logo-sub">Inventory & POS</div>
+        </div>
+      </div>
+    </div>
+    <nav class="nav">
+      <div class="nav-section">Main</div>
+      <div class="nav-item active" onclick="showPage('dashboard',this)" aria-label="Dashboard">
+        <i class="ti ti-layout-dashboard" aria-hidden="true"></i> Dashboard
+      </div>
+      <div class="nav-item" onclick="showPage('pos',this)" aria-label="Point of Sale">
+        <i class="ti ti-receipt" aria-hidden="true"></i> Point of Sale
+      </div>
+      <div class="nav-section">Inventory</div>
+      <div class="nav-item" onclick="showPage('products',this)" aria-label="Products">
+        <i class="ti ti-device-mobile" aria-hidden="true"></i> Products
+      </div>
+      <div class="nav-item" onclick="showPage('accessories',this)" aria-label="Accessories">
+        <i class="ti ti-headphones" aria-hidden="true"></i> Accessories
+      </div>
+      <div class="nav-item" onclick="showPage('repairs',this)" aria-label="Repairs">
+        <i class="ti ti-tool" aria-hidden="true"></i> Repair Parts
+      </div>
+      <div class="nav-item" onclick="showPage('alerts',this)" aria-label="Low Stock">
+        <i class="ti ti-alert-triangle" aria-hidden="true"></i> Low Stock
+        <span class="nav-badge warn" id="low-badge">3</span>
+      </div>
+      <div class="nav-section">Business</div>
+      <div class="nav-item" onclick="showPage('sales',this)" aria-label="Sales History">
+        <i class="ti ti-chart-bar" aria-hidden="true"></i> Sales History
+      </div>
+      <div class="nav-item" onclick="showPage('suppliers',this)" aria-label="Suppliers">
+        <i class="ti ti-truck" aria-hidden="true"></i> Suppliers
+      </div>
+      <div class="nav-item" onclick="showPage('customers',this)" aria-label="Customers">
+        <i class="ti ti-users" aria-hidden="true"></i> Customers
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="nav-item" style="margin:0">
+        <i class="ti ti-settings" aria-hidden="true"></i> Settings
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="topbar-title" id="page-title">Dashboard</div>
+      <div class="search-wrap">
+        <i class="ti ti-search" aria-hidden="true"></i>
+        <input type="text" placeholder="Search inventory..." id="global-search" oninput="handleSearch(this.value)">
+      </div>
+      <button class="btn" onclick="showModal('add-product')"><i class="ti ti-plus" aria-hidden="true"></i> Add Item</button>
+      <button class="btn primary" onclick="showPage('pos',document.querySelector('.nav-item:nth-child(3)'))"><i class="ti ti-receipt" aria-hidden="true"></i> New Sale</button>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Products</div>
+            <div class="stat-value" id="stat-total">0</div>
+            <div class="stat-sub">across all categories</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Today's Sales</div>
+            <div class="stat-value" id="stat-sales">৳0</div>
+            <div class="stat-sub up" id="stat-sales-count">0 transactions</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Stock Value</div>
+            <div class="stat-value" id="stat-value">৳0</div>
+            <div class="stat-sub">total inventory</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Low Stock Items</div>
+            <div class="stat-value" id="stat-low" style="color:var(--text-warning)">0</div>
+            <div class="stat-sub down">need reorder</div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div>
+            <div class="section-header">
+              <span class="section-title">Recent Transactions</span>
+              <button class="btn" style="font-size:12px;padding:4px 10px" onclick="showPage('sales',null)">View all</button>
+            </div>
+            <div class="card">
+              <table>
+                <thead><tr><th>Item</th><th>Type</th><th>Qty</th><th>Amount</th></tr></thead>
+                <tbody id="recent-sales-tbody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div>
+            <div class="section-header">
+              <span class="section-title">Stock Alerts</span>
+            </div>
+            <div class="card" id="alert-list-dash"></div>
+          </div>
+        </div>
+        <div class="section-header"><span class="section-title">Inventory by Category</span></div>
+        <div class="card">
+          <div style="padding:16px" id="category-breakdown"></div>
+        </div>
+      </div>
+
+      <!-- POS -->
+      <div class="page" id="page-pos">
+        <div class="pos-layout">
+          <div>
+            <div class="chip-row" id="pos-cats">
+              <div class="chip active" onclick="filterPOS('All',this)">All</div>
+              <div class="chip" onclick="filterPOS('Phone',this)">Phones</div>
+              <div class="chip" onclick="filterPOS('Accessory',this)">Accessories</div>
+              <div class="chip" onclick="filterPOS('Part',this)">Repair Parts</div>
+            </div>
+            <div class="product-grid" id="pos-products"></div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="card-header"><i class="ti ti-shopping-cart" aria-hidden="true" style="font-size:16px"></i><span class="card-title">Current Sale</span></div>
+              <div id="cart-items" style="min-height:120px"></div>
+              <div class="pos-summary" id="cart-summary" style="border-top:0.5px solid var(--border)">
+                <div class="pos-row"><span>Subtotal</span><span id="cart-sub">৳0</span></div>
+                <div class="pos-row"><span>VAT (5%)</span><span id="cart-tax">৳0</span></div>
+                <div class="pos-row"><span>Discount</span>
+                  <span style="display:flex;align-items:center;gap:4px">৳<input type="number" id="discount-input" value="0" min="0" style="width:60px;padding:2px 6px;font-size:13px" oninput="updateCartTotals()"></span>
+                </div>
+                <div class="pos-row total"><span>Total</span><span id="cart-total">৳0</span></div>
+              </div>
+              <div style="padding:12px 16px;display:flex;flex-direction:column;gap:8px">
+                <select id="payment-method" style="width:100%">
+                  <option>Cash</option><option>bKash</option><option>Nagad</option><option>Card</option><option>Bank Transfer</option>
+                </select>
+                <input type="text" id="customer-name-pos" placeholder="Customer name (optional)">
+                <div style="display:flex;gap:8px">
+                  <button class="btn" style="flex:1" onclick="clearCart()"><i class="ti ti-trash" aria-hidden="true"></i> Clear</button>
+                  <button class="btn primary" style="flex:2" onclick="completeSale()"><i class="ti ti-check" aria-hidden="true"></i> Complete Sale</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRODUCTS -->
+      <div class="page" id="page-products">
+        <div class="filter-row">
+          <select id="products-brand-filter" onchange="renderTable('products')">
+            <option value="">All Brands</option>
+          </select>
+          <select id="products-stock-filter" onchange="renderTable('products')">
+            <option value="">All Stock</option>
+            <option value="low">Low Stock</option>
+            <option value="ok">In Stock</option>
+          </select>
+          <button class="btn primary" style="margin-left:auto" onclick="showModal('add-product')"><i class="ti ti-plus" aria-hidden="true"></i> Add Phone</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Model</th><th>Brand</th><th>Color/Storage</th><th>IMEI</th><th>Buy Price</th><th>Sell Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+            <tbody id="products-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ACCESSORIES -->
+      <div class="page" id="page-accessories">
+        <div class="filter-row">
+          <select id="acc-cat-filter" onchange="renderTable('accessories')">
+            <option value="">All Types</option>
+          </select>
+          <button class="btn primary" style="margin-left:auto" onclick="showModal('add-accessory')"><i class="ti ti-plus" aria-hidden="true"></i> Add Accessory</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Name</th><th>Category</th><th>Brand/Compat.</th><th>SKU</th><th>Buy Price</th><th>Sell Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+            <tbody id="accessories-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- REPAIR PARTS -->
+      <div class="page" id="page-repairs">
+        <div class="filter-row">
+          <select id="parts-model-filter" onchange="renderTable('repairs')">
+            <option value="">All Models</option>
+          </select>
+          <button class="btn primary" style="margin-left:auto" onclick="showModal('add-part')"><i class="ti ti-plus" aria-hidden="true"></i> Add Part</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Part Name</th><th>Compatible Model</th><th>Quality</th><th>SKU</th><th>Buy Price</th><th>Sell Price</th><th>Stock</th><th>Status</th><th></th></tr></thead>
+            <tbody id="repairs-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ALERTS -->
+      <div class="page" id="page-alerts">
+        <div class="card" id="alerts-list"></div>
+      </div>
+
+      <!-- SALES -->
+      <div class="page" id="page-sales">
+        <div class="card">
+          <table>
+            <thead><tr><th>Date/Time</th><th>Items</th><th>Customer</th><th>Payment</th><th>Subtotal</th><th>VAT</th><th>Discount</th><th>Total</th></tr></thead>
+            <tbody id="sales-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SUPPLIERS -->
+      <div class="page" id="page-suppliers">
+        <div class="filter-row">
+          <button class="btn primary" style="margin-left:auto" onclick="showModal('add-supplier')"><i class="ti ti-plus" aria-hidden="true"></i> Add Supplier</button>
+        </div>
+        <div class="card">
+          <table>
+            <thead><tr><th>Name</th><th>Phone</th><th>Category</th><th>Address</th><th>Last Order</th><th>Status</th></tr></thead>
+            <tbody id="suppliers-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- CUSTOMERS -->
+      <div class="page" id="page-customers">
+        <div class="card">
+          <table>
+            <thead><tr><th>Name</th><th>Phone</th><th>Total Purchases</th><th>Last Visit</th></tr></thead>
+            <tbody id="customers-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal-bg" id="modal-add-product">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Phone</span>
+      <button class="close-btn" onclick="closeModal('add-product')"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Brand</label><select id="f-brand"><option>Samsung</option><option>Apple</option><option>Xiaomi</option><option>Realme</option><option>OPPO</option><option>Vivo</option><option>Tecno</option><option>Infinix</option><option>Nokia</option></select></div>
+      <div class="form-group"><label>Model</label><input type="text" id="f-model" placeholder="Galaxy A55"></div>
+      <div class="form-group"><label>Color</label><input type="text" id="f-color" placeholder="Midnight Black"></div>
+      <div class="form-group"><label>Storage</label><select id="f-storage"><option>32GB</option><option>64GB</option><option>128GB</option><option>256GB</option><option>512GB</option></select></div>
+      <div class="form-group"><label>IMEI (optional)</label><input type="text" id="f-imei" placeholder="359876543210987"></div>
+      <div class="form-group"><label>Buy Price (৳)</label><input type="number" id="f-buy" placeholder="0"></div>
+      <div class="form-group"><label>Sell Price (৳)</label><input type="number" id="f-sell" placeholder="0"></div>
+      <div class="form-group"><label>Stock Qty</label><input type="number" id="f-qty" value="1" min="0"></div>
+      <div class="form-group"><label>Low Stock Alert</label><input type="number" id="f-alert" value="2" min="0"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('add-product')">Cancel</button>
+      <button class="btn primary" onclick="addProduct()">Add Phone</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-add-accessory">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Accessory</span>
+      <button class="close-btn" onclick="closeModal('add-accessory')"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Name</label><input type="text" id="a-name" placeholder="USB-C Fast Charger 65W"></div>
+      <div class="form-group"><label>Category</label><select id="a-cat"><option>Charger</option><option>Cable</option><option>Case</option><option>Screen Protector</option><option>Earphone</option><option>Power Bank</option><option>Memory Card</option><option>Other</option></select></div>
+      <div class="form-group"><label>Brand</label><input type="text" id="a-brand" placeholder="Anker"></div>
+      <div class="form-group"><label>Compatible With</label><input type="text" id="a-compat" placeholder="Samsung / Universal"></div>
+      <div class="form-group"><label>Buy Price (৳)</label><input type="number" id="a-buy" placeholder="0"></div>
+      <div class="form-group"><label>Sell Price (৳)</label><input type="number" id="a-sell" placeholder="0"></div>
+      <div class="form-group"><label>Stock Qty</label><input type="number" id="a-qty" value="1" min="0"></div>
+      <div class="form-group"><label>Low Stock Alert</label><input type="number" id="a-alert" value="5" min="0"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('add-accessory')">Cancel</button>
+      <button class="btn primary" onclick="addAccessory()">Add Accessory</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-add-part">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Repair Part</span>
+      <button class="close-btn" onclick="closeModal('add-part')"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Part Name</label><input type="text" id="p-name" placeholder="LCD Display"></div>
+      <div class="form-group"><label>Compatible Model</label><input type="text" id="p-model" placeholder="Samsung A55"></div>
+      <div class="form-group"><label>Quality</label><select id="p-quality"><option>Original</option><option>OEM</option><option>Copy</option></select></div>
+      <div class="form-group"><label>SKU</label><input type="text" id="p-sku" placeholder="AUTO"></div>
+      <div class="form-group"><label>Buy Price (৳)</label><input type="number" id="p-buy" placeholder="0"></div>
+      <div class="form-group"><label>Sell Price (৳)</label><input type="number" id="p-sell" placeholder="0"></div>
+      <div class="form-group"><label>Stock Qty</label><input type="number" id="p-qty" value="1" min="0"></div>
+      <div class="form-group"><label>Low Stock Alert</label><input type="number" id="p-alert" value="2" min="0"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('add-part')">Cancel</button>
+      <button class="btn primary" onclick="addPart()">Add Part</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-add-supplier">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Add Supplier</span>
+      <button class="close-btn" onclick="closeModal('add-supplier')"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div class="form-grid">
+      <div class="form-group"><label>Supplier Name</label><input type="text" id="s-name" placeholder="Dhaka Mobile Wholesale"></div>
+      <div class="form-group"><label>Phone</label><input type="text" id="s-phone" placeholder="01711-000000"></div>
+      <div class="form-group"><label>Category</label><select id="s-cat"><option>Phones</option><option>Accessories</option><option>Parts</option><option>All</option></select></div>
+      <div class="form-group"><label>Address</label><input type="text" id="s-address" placeholder="Elephant Road, Dhaka"></div>
+    </div>
+    <div class="form-actions">
+      <button class="btn" onclick="closeModal('add-supplier')">Cancel</button>
+      <button class="btn primary" onclick="addSupplier()">Add Supplier</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-bg" id="modal-receipt">
+  <div class="modal" style="width:380px">
+    <div class="modal-header">
+      <span class="modal-title">Sale Receipt</span>
+      <button class="close-btn" onclick="closeModal('receipt')"><i class="ti ti-x" aria-hidden="true"></i></button>
+    </div>
+    <div style="padding:16px" id="receipt-content"></div>
+    <div class="form-actions">
+      <button class="btn primary" onclick="closeModal('receipt')"><i class="ti ti-check" aria-hidden="true"></i> Done</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let db = {
+  products: [
+    {id:'P1',type:'Phone',brand:'Samsung',model:'Galaxy A55',color:'Midnight Blue',storage:'128GB',imei:'',buyPrice:28000,sellPrice:34000,qty:5,alert:2,sku:'SAM-A55-MB-128'},
+    {id:'P2',type:'Phone',brand:'Apple',model:'iPhone 14',color:'Black',storage:'128GB',imei:'',buyPrice:75000,sellPrice:90000,qty:2,alert:2,sku:'APL-14-BK-128'},
+    {id:'P3',type:'Phone',brand:'Xiaomi',model:'Redmi Note 13',color:'Ice Blue',storage:'128GB',imei:'',buyPrice:18000,sellPrice:22000,qty:1,alert:3,sku:'XMI-RN13-IB-128'},
+    {id:'P4',type:'Phone',brand:'Realme',model:'C67',color:'Black Rock',storage:'128GB',imei:'',buyPrice:15000,sellPrice:18500,qty:8,alert:3,sku:'RLM-C67-BR-128'},
+    {id:'P5',type:'Phone',brand:'OPPO',model:'A78',color:'Glowing Black',storage:'128GB',imei:'',buyPrice:22000,sellPrice:26500,qty:0,alert:2,sku:'OPO-A78-GB-128'},
+  ],
+  accessories: [
+    {id:'A1',type:'Accessory',name:'65W GaN Charger',category:'Charger',brand:'Anker',compat:'Universal',buyPrice:900,sellPrice:1500,qty:12,alert:5,sku:'ANK-65W-GAN'},
+    {id:'A2',type:'Accessory',name:'USB-C Cable 1m Braided',category:'Cable',brand:'Baseus',compat:'Universal',buyPrice:200,sellPrice:450,qty:30,alert:10,sku:'BAS-USBC-1M'},
+    {id:'A3',type:'Accessory',name:'Tempered Glass Samsung A55',category:'Screen Protector',brand:'Generic',compat:'Samsung A55',buyPrice:80,sellPrice:200,qty:4,alert:10,sku:'GEN-TG-A55'},
+    {id:'A4',type:'Accessory',name:'Silicone Case iPhone 14',category:'Case',brand:'Apple',compat:'iPhone 14',buyPrice:500,sellPrice:1200,qty:3,alert:5,sku:'APL-CASE-14'},
+    {id:'A5',type:'Accessory',name:'Wireless Earbuds TWS',category:'Earphone',brand:'JBL',compat:'Universal',buyPrice:1200,sellPrice:2000,qty:7,alert:3,sku:'JBL-TWS-01'},
+  ],
+  parts: [
+    {id:'R1',type:'Part',name:'LCD Display',model:'Samsung A55',quality:'Original',buyPrice:3500,sellPrice:5500,qty:2,alert:2,sku:'LCD-A55-ORG'},
+    {id:'R2',type:'Part',name:'Battery 4000mAh',model:'Xiaomi Redmi Note 13',quality:'OEM',buyPrice:600,sellPrice:1200,qty:5,alert:3,sku:'BAT-RN13-OEM'},
+    {id:'R3',type:'Part',name:'Charging Port',model:'Universal USB-C',quality:'OEM',buyPrice:150,sellPrice:400,qty:0,alert:3,sku:'CHG-USBC-OEM'},
+    {id:'R4',type:'Part',name:'Back Glass Panel',model:'iPhone 14',quality:'Original',buyPrice:2000,sellPrice:3500,qty:1,alert:2,sku:'BCK-IP14-ORG'},
+  ],
+  suppliers: [
+    {id:'S1',name:'Dhaka Mobile Traders',phone:'01711-234567',category:'Phones',address:'Elephant Road, Dhaka',lastOrder:'2025-06-20',status:'Active'},
+    {id:'S2',name:'Tech Accessories BD',phone:'01812-345678',category:'Accessories',address:'Bashundhara City, Dhaka',lastOrder:'2025-06-18',status:'Active'},
+    {id:'S3',name:'Repair Parts Hub',phone:'01913-456789',category:'Parts',address:'Nayabazar, Dhaka',lastOrder:'2025-06-10',status:'Active'},
+  ],
+  sales: [],
+  customers: {}
+};
+
+let cart = [];
+let posFilter = 'All';
+let skuCounter = 100;
+
+function fmt(n){return '৳'+Math.round(n).toLocaleString('en-IN')}
+function genSKU(){return 'SKU-'+Date.now().toString().slice(-6)}
+function allItems(){return [...db.products,...db.accessories,...db.parts]}
+function lowItems(){return allItems().filter(i=>i.qty<=i.alert)}
+function getStatus(i){
+  if(i.qty===0)return '<span class="badge danger">Out of stock</span>';
+  if(i.qty<=i.alert)return '<span class="badge warning">Low stock</span>';
+  return '<span class="badge success">In stock</span>';
+}
+
+function showPage(id,el){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  const titles={dashboard:'Dashboard',pos:'Point of Sale',products:'Phones',accessories:'Accessories',repairs:'Repair Parts',alerts:'Low Stock Alerts',sales:'Sales History',suppliers:'Suppliers',customers:'Customers'};
+  document.getElementById('page-title').textContent=titles[id]||id;
+  if(el){el.classList.add('active')}
+  refresh(id);
+}
+
+function refresh(id){
+  if(id==='dashboard')refreshDash();
+  if(id==='products')renderTable('products');
+  if(id==='accessories')renderTable('accessories');
+  if(id==='repairs')renderTable('repairs');
+  if(id==='alerts')renderAlerts();
+  if(id==='sales')renderSales();
+  if(id==='suppliers')renderSuppliers();
+  if(id==='customers')renderCustomers();
+  if(id==='pos')renderPOS();
+}
+
+function refreshDash(){
+  const all=allItems();
+  const totalQty=all.reduce((s,i)=>s+i.qty,0);
+  const totalVal=all.reduce((s,i)=>s+(i.qty*i.buyPrice),0);
+  const low=lowItems();
+  const todaySales=db.sales.filter(s=>s.date.startsWith(new Date().toISOString().slice(0,10)));
+  const todayTotal=todaySales.reduce((s,t)=>s+t.total,0);
+  document.getElementById('stat-total').textContent=all.length;
+  document.getElementById('stat-sales').textContent=fmt(todayTotal);
+  document.getElementById('stat-sales-count').textContent=todaySales.length+' transactions today';
+  document.getElementById('stat-value').textContent=fmt(totalVal);
+  document.getElementById('stat-low').textContent=low.length;
+  document.getElementById('low-badge').textContent=low.length;
+  const rtbody=document.getElementById('recent-sales-tbody');
+  const recent=db.sales.slice(-5).reverse();
+  rtbody.innerHTML=recent.length?recent.map(s=>`<tr><td>${s.items[0]?.name||'—'}${s.items.length>1?` +${s.items.length-1} more`:''}</td><td><span class="badge accent">${s.payment}</span></td><td>${s.items.reduce((a,i)=>a+i.qty,0)}</td><td>${fmt(s.total)}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;color:var(--text-muted);padding:20px">No transactions yet</td></tr>';
+  const adash=document.getElementById('alert-list-dash');
+  adash.innerHTML=low.length?low.slice(0,4).map(i=>`<div class="alert-item"><div class="alert-icon ${i.qty===0?'danger':'warn'}"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div><div class="alert-text"><div class="alert-name">${i.name||i.model}</div><div class="alert-sub">${i.sku} · Stock: ${i.qty} (min ${i.alert})</div></div></div>`).join(''):'<div style="padding:20px;text-align:center;color:var(--text-muted);font-size:13px"><i class="ti ti-check" aria-hidden="true" style="font-size:24px;display:block;margin-bottom:8px"></i>All stock levels OK</div>';
+  const cats={Phones:db.products,Accessories:db.accessories,Parts:db.parts};
+  const cEl=document.getElementById('category-breakdown');
+  cEl.innerHTML=Object.entries(cats).map(([k,v])=>{
+    const total=v.reduce((s,i)=>s+i.qty,0);
+    const val=v.reduce((s,i)=>s+(i.qty*i.sellPrice),0);
+    const max=Math.max(1,...Object.values(cats).map(a=>a.reduce((s,i)=>s+i.qty,0)));
+    const pct=Math.round((total/max)*100);
+    return `<div style="margin-bottom:14px"><div style="display:flex;justify-content:space-between;margin-bottom:4px"><span style="font-size:13px;font-weight:500">${k}</span><span style="font-size:12px;color:var(--text-secondary)">${total} units · ${fmt(val)}</span></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div></div>`;
+  }).join('');
+}
+
+function renderTable(type){
+  if(type==='products'){
+    const brands=[...new Set(db.products.map(p=>p.brand))];
+    const bFilter=document.getElementById('products-brand-filter');
+    const cur=bFilter.value;
+    bFilter.innerHTML='<option value="">All Brands</option>'+brands.map(b=>`<option value="${b}"${cur===b?' selected':''}>${b}</option>`).join('');
+    const sf=document.getElementById('products-stock-filter').value;
+    let rows=db.products.filter(p=>{
+      if(cur&&p.brand!==cur)return false;
+      if(sf==='low'&&p.qty>p.alert)return false;
+      if(sf==='ok'&&p.qty<=p.alert)return false;
+      return true;
+    });
+    document.getElementById('products-tbody').innerHTML=rows.map(p=>`<tr><td style="font-weight:500">${p.model}</td><td>${p.brand}</td><td><span class="tag">${p.color}</span> <span class="tag">${p.storage}</span></td><td style="color:var(--text-muted);font-size:11px">${p.imei||'—'}</td><td>${fmt(p.buyPrice)}</td><td style="color:var(--text-accent)">${fmt(p.sellPrice)}</td><td>${p.qty}</td><td>${getStatus(p)}</td><td><button class="btn" style="font-size:11px;padding:3px 8px" onclick="deleteItem('products','${p.id}')"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`).join('')||'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted)">No phones found</td></tr>';
+  }
+  if(type==='accessories'){
+    const cats=[...new Set(db.accessories.map(a=>a.category))];
+    const cf=document.getElementById('acc-cat-filter');
+    const cur=cf.value;
+    cf.innerHTML='<option value="">All Types</option>'+cats.map(c=>`<option value="${c}"${cur===c?' selected':''}>${c}</option>`).join('');
+    let rows=db.accessories.filter(a=>!cur||a.category===cur);
+    document.getElementById('accessories-tbody').innerHTML=rows.map(a=>`<tr><td style="font-weight:500">${a.name}</td><td><span class="tag">${a.category}</span></td><td>${a.brand} / ${a.compat}</td><td style="font-size:11px;color:var(--text-muted)">${a.sku}</td><td>${fmt(a.buyPrice)}</td><td style="color:var(--text-accent)">${fmt(a.sellPrice)}</td><td>${a.qty}</td><td>${getStatus(a)}</td><td><button class="btn" style="font-size:11px;padding:3px 8px" onclick="deleteItem('accessories','${a.id}')"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`).join('')||'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted)">No accessories found</td></tr>';
+  }
+  if(type==='repairs'){
+    const models=[...new Set(db.parts.map(p=>p.model))];
+    const mf=document.getElementById('parts-model-filter');
+    const cur=mf.value;
+    mf.innerHTML='<option value="">All Models</option>'+models.map(m=>`<option value="${m}"${cur===m?' selected':''}>${m}</option>`).join('');
+    let rows=db.parts.filter(p=>!cur||p.model===cur);
+    document.getElementById('repairs-tbody').innerHTML=rows.map(p=>`<tr><td style="font-weight:500">${p.name}</td><td>${p.model}</td><td><span class="badge ${p.quality==='Original'?'accent':p.quality==='OEM'?'neutral':'warning'}">${p.quality}</span></td><td style="font-size:11px;color:var(--text-muted)">${p.sku}</td><td>${fmt(p.buyPrice)}</td><td style="color:var(--text-accent)">${fmt(p.sellPrice)}</td><td>${p.qty}</td><td>${getStatus(p)}</td><td><button class="btn" style="font-size:11px;padding:3px 8px" onclick="deleteItem('parts','${p.id}')"><i class="ti ti-trash" aria-hidden="true"></i></button></td></tr>`).join('')||'<tr><td colspan="9" style="text-align:center;padding:20px;color:var(--text-muted)">No parts found</td></tr>';
+  }
+}
+
+function renderAlerts(){
+  const low=lowItems();
+  document.getElementById('alerts-list').innerHTML=low.length?low.map(i=>`<div class="alert-item"><div class="alert-icon ${i.qty===0?'danger':'warn'}"><i class="ti ti-alert-triangle" aria-hidden="true"></i></div><div class="alert-text"><div class="alert-name">${i.name||i.model} — ${i.type}</div><div class="alert-sub">SKU: ${i.sku} · Current: ${i.qty} · Min: ${i.alert}</div></div><div><span class="badge ${i.qty===0?'danger':'warning'}">${i.qty===0?'Out of stock':'Low stock'}</span></div></div>`).join(''):'<div style="padding:40px;text-align:center;color:var(--text-muted)"><i class="ti ti-check" aria-hidden="true" style="font-size:40px;display:block;margin-bottom:12px"></i><p style="font-size:14px">All stock levels are healthy</p></div>';
+}
+
+function renderSales(){
+  document.getElementById('sales-tbody').innerHTML=db.sales.slice().reverse().map(s=>`<tr><td style="font-size:12px;color:var(--text-muted)">${new Date(s.date).toLocaleString('en-BD',{dateStyle:'short',timeStyle:'short'})}</td><td>${s.items.map(i=>`${i.name} ×${i.qty}`).join(', ')}</td><td>${s.customer||'—'}</td><td><span class="badge accent">${s.payment}</span></td><td>${fmt(s.subtotal)}</td><td>${fmt(s.tax)}</td><td>${fmt(s.discount)}</td><td style="font-weight:500;color:var(--text-accent)">${fmt(s.total)}</td></tr>`).join('')||'<tr><td colspan="8" style="text-align:center;padding:20px;color:var(--text-muted)">No sales yet</td></tr>';
+}
+
+function renderSuppliers(){
+  document.getElementById('suppliers-tbody').innerHTML=db.suppliers.map(s=>`<tr><td style="font-weight:500">${s.name}</td><td>${s.phone}</td><td><span class="tag">${s.category}</span></td><td>${s.address}</td><td style="font-size:12px;color:var(--text-muted)">${s.lastOrder}</td><td><span class="badge success">${s.status}</span></td></tr>`).join('');
+}
+
+function renderCustomers(){
+  const custs=Object.values(db.customers);
+  document.getElementById('customers-tbody').innerHTML=custs.length?custs.map(c=>`<tr><td style="font-weight:500">${c.name}</td><td>${c.phone||'—'}</td><td>${fmt(c.total)}</td><td style="font-size:12px;color:var(--text-muted)">${new Date(c.lastVisit).toLocaleDateString('en-BD')}</td></tr>`).join(''):'<tr><td colspan="4" style="text-align:center;padding:20px;color:var(--text-muted)">No customers yet</td></tr>';
+}
+
+function renderPOS(){
+  const items=allItems().filter(i=>posFilter==='All'||i.type===posFilter||i.category===posFilter);
+  const el=document.getElementById('pos-products');
+  el.innerHTML=items.filter(i=>i.qty>0).map(i=>`<div class="product-tile" onclick="addToCart('${i.id}')"><div class="product-tile-name">${i.name||i.model}</div><div class="product-tile-sku">${i.sku}</div><div class="product-tile-price">${fmt(i.sellPrice)}</div><div class="product-tile-stock">${i.qty} in stock</div></div>`).join('')||'<div class="empty-state" style="grid-column:1/-1"><i class="ti ti-package-off" aria-hidden="true"></i><p>No items available</p></div>';
+  renderCart();
+}
+
+function filterPOS(f,el){
+  posFilter=f;
+  document.querySelectorAll('#pos-cats .chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderPOS();
+}
+
+function getItem(id){return allItems().find(i=>i.id===id)}
+
+function addToCart(id){
+  const item=getItem(id);
+  if(!item||item.qty===0)return;
+  const existing=cart.find(c=>c.id===id);
+  if(existing){
+    if(existing.qty>=item.qty){alert('Not enough stock!');return;}
+    existing.qty++;
+  } else {
+    cart.push({id,name:item.name||item.model,price:item.sellPrice,qty:1,sku:item.sku});
+  }
+  renderCart();
+}
+
+function changeQty(id,delta){
+  const c=cart.find(c=>c.id===id);
+  if(!c)return;
+  const item=getItem(id);
+  c.qty+=delta;
+  if(c.qty<=0)cart=cart.filter(x=>x.id!==id);
+  else if(c.qty>item.qty){c.qty=item.qty;}
+  renderCart();
+}
+
+function renderCart(){
+  const el=document.getElementById('cart-items');
+  el.innerHTML=cart.length?cart.map(c=>`<div class="sale-item"><div class="sale-info"><div class="sale-name">${c.name}</div><div class="sale-sku">${c.sku}</div></div><div class="qty-ctrl"><button class="qty-btn" onclick="changeQty('${c.id}',-1)">−</button><span class="qty-val">${c.qty}</span><button class="qty-btn" onclick="changeQty('${c.id}',1)">+</button></div><div class="sale-price">${fmt(c.price)}</div></div>`).join(''):'<div class="empty-state" style="padding:30px"><i class="ti ti-shopping-cart" aria-hidden="true"></i><p>Tap a product to add</p></div>';
+  updateCartTotals();
+}
+
+function updateCartTotals(){
+  const sub=cart.reduce((s,c)=>s+(c.price*c.qty),0);
+  const tax=sub*0.05;
+  const disc=parseFloat(document.getElementById('discount-input')?.value||0)||0;
+  const total=Math.max(0,sub+tax-disc);
+  document.getElementById('cart-sub').textContent=fmt(sub);
+  document.getElementById('cart-tax').textContent=fmt(tax);
+  document.getElementById('cart-total').textContent=fmt(total);
+}
+
+function clearCart(){cart=[];document.getElementById('discount-input').value=0;renderCart();}
+
+function completeSale(){
+  if(cart.length===0){alert('Cart is empty!');return;}
+  const sub=cart.reduce((s,c)=>s+(c.price*c.qty),0);
+  const tax=sub*0.05;
+  const disc=parseFloat(document.getElementById('discount-input').value)||0;
+  const total=Math.max(0,sub+tax-disc);
+  const payment=document.getElementById('payment-method').value;
+  const customer=document.getElementById('customer-name-pos').value.trim();
+  cart.forEach(c=>{
+    const item=getItem(c.id);
+    if(item)item.qty-=c.qty;
+  });
+  const sale={id:'TXN'+Date.now(),date:new Date().toISOString(),items:cart.map(c=>({...c})),customer,payment,subtotal:Math.round(sub),tax:Math.round(tax),discount:Math.round(disc),total:Math.round(total)};
+  db.sales.push(sale);
+  if(customer){
+    if(!db.customers[customer])db.customers[customer]={name:customer,phone:'',total:0,lastVisit:sale.date};
+    db.customers[customer].total+=total;
+    db.customers[customer].lastVisit=sale.date;
+  }
+  showReceipt(sale);
+  clearCart();
+  document.getElementById('customer-name-pos').value='';
+}
+
+function showReceipt(sale){
+  document.getElementById('receipt-content').innerHTML=`
+    <div style="text-align:center;margin-bottom:16px">
+      <div style="font-size:16px;font-weight:500">MobilePoint</div>
+      <div style="font-size:12px;color:var(--text-muted)">${new Date(sale.date).toLocaleString()}</div>
+      <div style="font-size:12px;color:var(--text-muted)">Receipt #${sale.id}</div>
+    </div>
+    <div style="border-top:0.5px solid var(--border);padding-top:12px;margin-bottom:12px">
+      ${sale.items.map(i=>`<div class="receipt-line"><span>${i.name} ×${i.qty}</span><span>${fmt(i.price*i.qty)}</span></div>`).join('')}
+    </div>
+    <div class="receipt-line"><span>Subtotal</span><span>${fmt(sale.subtotal)}</span></div>
+    <div class="receipt-line"><span>VAT (5%)</span><span>${fmt(sale.tax)}</span></div>
+    ${sale.discount?`<div class="receipt-line"><span>Discount</span><span>−${fmt(sale.discount)}</span></div>`:''}
+    <div class="receipt-line" style="font-size:15px;font-weight:500;padding-top:8px;border-top:0.5px solid var(--border)"><span>Total</span><span>${fmt(sale.total)}</span></div>
+    <div style="margin-top:12px;text-align:center;font-size:12px;color:var(--text-muted)">Payment: ${sale.payment}${sale.customer?` · Customer: ${sale.customer}`:''}</div>
+    <div style="margin-top:12px;text-align:center;font-size:12px;color:var(--text-muted)">Thank you for your purchase!</div>`;
+  showModal('receipt');
+}
+
+function showModal(id){document.getElementById('modal-'+id).classList.add('open');}
+function closeModal(id){document.getElementById('modal-'+id).classList.remove('open');}
+
+function addProduct(){
+  const brand=document.getElementById('f-brand').value;
+  const model=document.getElementById('f-model').value.trim();
+  if(!model){alert('Enter model name');return;}
+  const color=document.getElementById('f-color').value.trim()||'—';
+  const storage=document.getElementById('f-storage').value;
+  const sku=`${brand.slice(0,3).toUpperCase()}-${model.replace(/\s/g,'-').slice(0,8).toUpperCase()}-${storage.replace('GB','')}`;
+  db.products.push({id:'P'+Date.now(),type:'Phone',brand,model,color,storage,imei:document.getElementById('f-imei').value,buyPrice:parseFloat(document.getElementById('f-buy').value)||0,sellPrice:parseFloat(document.getElementById('f-sell').value)||0,qty:parseInt(document.getElementById('f-qty').value)||0,alert:parseInt(document.getElementById('f-alert').value)||2,sku});
+  closeModal('add-product');
+  renderTable('products');
+  refreshDash();
+}
+
+function addAccessory(){
+  const name=document.getElementById('a-name').value.trim();
+  if(!name){alert('Enter accessory name');return;}
+  const cat=document.getElementById('a-cat').value;
+  db.accessories.push({id:'A'+Date.now(),type:'Accessory',name,category:cat,brand:document.getElementById('a-brand').value||'Generic',compat:document.getElementById('a-compat').value||'Universal',buyPrice:parseFloat(document.getElementById('a-buy').value)||0,sellPrice:parseFloat(document.getElementById('a-sell').value)||0,qty:parseInt(document.getElementById('a-qty').value)||0,alert:parseInt(document.getElementById('a-alert').value)||5,sku:genSKU()});
+  closeModal('add-accessory');
+  renderTable('accessories');
+  refreshDash();
+}
+
+function addPart(){
+  const name=document.getElementById('p-name').value.trim();
+  if(!name){alert('Enter part name');return;}
+  db.parts.push({id:'R'+Date.now(),type:'Part',name,model:document.getElementById('p-model').value||'Universal',quality:document.getElementById('p-quality').value,buyPrice:parseFloat(document.getElementById('p-buy').value)||0,sellPrice:parseFloat(document.getElementById('p-sell').value)||0,qty:parseInt(document.getElementById('p-qty').value)||0,alert:parseInt(document.getElementById('p-alert').value)||2,sku:document.getElementById('p-sku').value||genSKU()});
+  closeModal('add-part');
+  renderTable('repairs');
+  refreshDash();
+}
+
+function addSupplier(){
+  const name=document.getElementById('s-name').value.trim();
+  if(!name){alert('Enter supplier name');return;}
+  db.suppliers.push({id:'S'+Date.now(),name,phone:document.getElementById('s-phone').value,category:document.getElementById('s-cat').value,address:document.getElementById('s-address').value,lastOrder:new Date().toISOString().slice(0,10),status:'Active'});
+  closeModal('add-supplier');
+  renderSuppliers();
+}
+
+function deleteItem(col,id){
+  if(!confirm('Remove this item?'))return;
+  db[col]=db[col].filter(i=>i.id!==id);
+  renderTable(col==='products'?'products':col==='accessories'?'accessories':'repairs');
+  refreshDash();
+}
+
+function handleSearch(q){
+  if(!q){return;}
+  const results=allItems().filter(i=>(i.name||i.model||'').toLowerCase().includes(q.toLowerCase())||i.sku.toLowerCase().includes(q.toLowerCase())||(i.brand||'').toLowerCase().includes(q.toLowerCase()));
+}
+
+document.querySelectorAll('.modal-bg').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open')}));
+
+refreshDash();
+</script>

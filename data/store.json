@@ -1,0 +1,316 @@
+{
+  "products": [
+    {
+      "id": "P2",
+      "type": "Phone",
+      "brand": "Apple",
+      "model": "iPhone 14",
+      "color": "Black",
+      "storage": "128GB",
+      "imei": "",
+      "buyPrice": 75000,
+      "sellPrice": 90000,
+      "qty": 1,
+      "alert": 2,
+      "sku": "APP-IPHONE-14-128"
+    },
+    {
+      "id": "P3",
+      "type": "Phone",
+      "brand": "Xiaomi",
+      "model": "Redmi Note 13",
+      "color": "Ice Blue",
+      "storage": "128GB",
+      "imei": "",
+      "buyPrice": 18000,
+      "sellPrice": 22000,
+      "qty": 1,
+      "alert": 3,
+      "sku": "XIA-REDMI-NOTE-13-128"
+    },
+    {
+      "id": "P4",
+      "type": "Phone",
+      "brand": "Realme",
+      "model": "C67",
+      "color": "Black Rock",
+      "storage": "128GB",
+      "imei": "",
+      "buyPrice": 15000,
+      "sellPrice": 18500,
+      "qty": 8,
+      "alert": 3,
+      "sku": "REA-C67-128"
+    },
+    {
+      "id": "P5",
+      "type": "Phone",
+      "brand": "OPPO",
+      "model": "A78",
+      "color": "Glowing Black",
+      "storage": "128GB",
+      "imei": "",
+      "buyPrice": 22000,
+      "sellPrice": 26500,
+      "qty": 0,
+      "alert": 2,
+      "sku": "OPP-A78-128"
+    },
+    {
+      "id": "PMQVSX6OIZUHJ",
+      "type": "Phone",
+      "brand": "Infinix",
+      "model": "sdgsgd",
+      "color": "red",
+      "storage": "64GB",
+      "imei": "123654789",
+      "buyPrice": 1500,
+      "sellPrice": 1550,
+      "qty": 2,
+      "alert": 1,
+      "sku": "INF-SDGSGD-64GB"
+    }
+  ],
+  "accessories": [
+    {
+      "id": "A1",
+      "type": "Accessory",
+      "name": "65W GaN Charger",
+      "category": "Charger",
+      "brand": "Anker",
+      "compat": "Universal",
+      "buyPrice": 900,
+      "sellPrice": 1500,
+      "qty": 12,
+      "alert": 5,
+      "sku": "ANK-65W-GAN"
+    },
+    {
+      "id": "A2",
+      "type": "Accessory",
+      "name": "USB-C Cable 1m Braided",
+      "category": "Cable",
+      "brand": "Baseus",
+      "compat": "Universal",
+      "buyPrice": 200,
+      "sellPrice": 450,
+      "qty": 29,
+      "alert": 10,
+      "sku": "BAS-USBC-1M"
+    },
+    {
+      "id": "A3",
+      "type": "Accessory",
+      "name": "Tempered Glass Samsung A55",
+      "category": "Screen Protector",
+      "brand": "Generic",
+      "compat": "Samsung A55",
+      "buyPrice": 80,
+      "sellPrice": 200,
+      "qty": 4,
+      "alert": 10,
+      "sku": "GEN-TG-A55"
+    },
+    {
+      "id": "A4",
+      "type": "Accessory",
+      "name": "Silicone Case iPhone 14",
+      "category": "Case",
+      "brand": "Apple",
+      "compat": "iPhone 14",
+      "buyPrice": 500,
+      "sellPrice": 1200,
+      "qty": 3,
+      "alert": 5,
+      "sku": "APP-CASE-14"
+    },
+    {
+      "id": "A5",
+      "type": "Accessory",
+      "name": "Wireless Earbuds TWS",
+      "category": "Earphone",
+      "brand": "JBL",
+      "compat": "Universal",
+      "buyPrice": 1200,
+      "sellPrice": 2000,
+      "qty": 6,
+      "alert": 3,
+      "sku": "JBL-TWS-01"
+    }
+  ],
+  "parts": [
+    {
+      "id": "R1",
+      "type": "Part",
+      "name": "LCD Display",
+      "model": "Samsung A55",
+      "quality": "Original",
+      "buyPrice": 3500,
+      "sellPrice": 5500,
+      "qty": 2,
+      "alert": 2,
+      "sku": "LCD-A55-ORG"
+    },
+    {
+      "id": "R2",
+      "type": "Part",
+      "name": "Battery 4000mAh",
+      "model": "Xiaomi Redmi Note 13",
+      "quality": "OEM",
+      "buyPrice": 600,
+      "sellPrice": 1200,
+      "qty": 5,
+      "alert": 3,
+      "sku": "BAT-RN13-OEM"
+    },
+    {
+      "id": "R3",
+      "type": "Part",
+      "name": "Charging Port",
+      "model": "Universal USB-C",
+      "quality": "OEM",
+      "buyPrice": 150,
+      "sellPrice": 400,
+      "qty": 0,
+      "alert": 3,
+      "sku": "CHG-USBC-OEM"
+    },
+    {
+      "id": "R4",
+      "type": "Part",
+      "name": "Back Glass Panel",
+      "model": "iPhone 14",
+      "quality": "Original",
+      "buyPrice": 2000,
+      "sellPrice": 3500,
+      "qty": 1,
+      "alert": 2,
+      "sku": "BCK-IP14-ORG"
+    }
+  ],
+  "suppliers": [
+    {
+      "id": "S1",
+      "name": "Dhaka Mobile Traders",
+      "phone": "01711-234567",
+      "category": "Phones",
+      "address": "Elephant Road, Dhaka",
+      "lastOrder": "2026-06-20",
+      "status": "Active"
+    },
+    {
+      "id": "S2",
+      "name": "Tech Accessories BD",
+      "phone": "01812-345678",
+      "category": "Accessories",
+      "address": "Bashundhara City, Dhaka",
+      "lastOrder": "2026-06-18",
+      "status": "Active"
+    },
+    {
+      "id": "S3",
+      "name": "Repair Parts Hub",
+      "phone": "01913-456789",
+      "category": "Parts",
+      "address": "Nayabazar, Dhaka",
+      "lastOrder": "2026-06-10",
+      "status": "Active"
+    },
+    {
+      "id": "SMQVTII5FB8BE",
+      "name": "Raju Telecom",
+      "phone": "01588545311",
+      "category": "Accessories",
+      "address": "Sports Market, Gulistan",
+      "lastOrder": "2026-06-27",
+      "status": "Active"
+    }
+  ],
+  "sales": [
+    {
+      "id": "TXN-1782530892351",
+      "date": "2026-06-27T03:28:12.351Z",
+      "items": [
+        {
+          "id": "A2",
+          "name": "USB-C Cable 1m Braided",
+          "price": 450,
+          "qty": 1,
+          "sku": "BAS-USBC-1M",
+          "type": "Accessory"
+        }
+      ],
+      "customer": "",
+      "payment": "Cash",
+      "subtotal": 450,
+      "tax": 23,
+      "discount": 0,
+      "total": 473
+    },
+    {
+      "id": "TXN-1782530904675",
+      "date": "2026-06-27T03:28:24.675Z",
+      "items": [
+        {
+          "id": "A5",
+          "name": "Wireless Earbuds TWS",
+          "price": 2000,
+          "qty": 1,
+          "sku": "JBL-TWS-01",
+          "type": "Accessory"
+        }
+      ],
+      "customer": "",
+      "payment": "Nagad",
+      "subtotal": 2000,
+      "tax": 100,
+      "discount": 0,
+      "total": 2100
+    },
+    {
+      "id": "TXN-1782532262381",
+      "date": "2026-06-27T03:51:02.381Z",
+      "items": [
+        {
+          "id": "P2",
+          "name": "iPhone 14",
+          "price": 90000,
+          "qty": 1,
+          "sku": "APP-IPHONE-14-128",
+          "type": "Phone"
+        }
+      ],
+      "cashier": "Ismail",
+      "customer": "Munna",
+      "payment": "Card",
+      "subtotal": 90000,
+      "tax": 4500,
+      "discount": 0,
+      "total": 94500
+    }
+  ],
+  "customers": [
+    {
+      "id": "CMQVTOOA5X6IK",
+      "name": "Munna",
+      "phone": "",
+      "total": 94500,
+      "lastVisit": "2026-06-27T03:51:02.381Z"
+    }
+  ],
+  "notifications": [
+    {
+      "id": "NMQVTOOA5AA4E",
+      "type": "sale",
+      "saleId": "TXN-1782532262381",
+      "date": "2026-06-27T03:51:02.381Z",
+      "cashier": "Ismail",
+      "customer": "Munna",
+      "payment": "Card",
+      "total": 94500,
+      "lineCount": 1,
+      "quantityCount": 1,
+      "primaryItemName": "iPhone 14"
+    }
+  ]
+}

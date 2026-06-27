@@ -1,75 +1,102 @@
-# Telecom Store Inventory Management Web App
+# MobilePoint Inventory
 
-Simple full-stack inventory app for a telecom store, built as two separate projects:
+A mobile shop inventory and POS system rebuilt from `mobile_shop_inventory_system.html` using:
 
-- `frontend/` - Next.js responsive web UI
-- `backend/` - Express + SQLite API
+- Next.js for the frontend
+- Node.js + Express for the backend server
+- A JSON file store for simple local persistence
 
 ## Features
 
-- Add new products with name, barcode, quantity, price, category, and low-stock threshold
-- Search by product name or barcode
-- Use a USB barcode scanner through the main search input
-- Quick `-1`, `+1`, and `+5` stock adjustment buttons
-- View all inventory in a sortable table
-- Highlight low-stock products
-- Edit and delete products
-
-## Tech Stack
-
-- Frontend: Next.js App Router + TypeScript
-- Backend: Node.js + Express
-- Database: SQLite
+- Dashboard with stock KPIs, category breakdown, low-stock alerts, and recent sales
+- POS checkout with tax, discount, payment method, cashier capture, customer capture, and receipt modal
+- Inventory management for phones, accessories, and repair parts with edit/update support
+- Supplier and customer tracking
+- Low-stock monitoring
+- Realtime admin sale notifications while the dashboard is open
+- Search across inventory records
+- Designed delete confirmation before inventory removal
 
 ## Project Structure
 
 ```text
-Telecom/
-├── backend/
-│   ├── package.json
-│   └── src/
-├── frontend/
-│   ├── app/
-│   ├── lib/
-│   ├── types/
-│   └── package.json
-└── README.md
+.
+├── data/store.json          # JSON-backed local database
+├── server.js                # Express + Next.js custom server
+├── server/
+│   ├── routes.js            # REST API routes
+│   └── store.js             # Store helpers and business logic
+└── src/
+    ├── app/
+    │   ├── globals.css      # App styling
+    │   ├── layout.jsx       # Next.js layout
+    │   └── page.jsx         # Entry page
+    └── components/
+        ├── Icon.jsx         # Inline SVG icon set
+        └── MobilePointApp.jsx
 ```
 
-## Run Backend
+## Run Locally
+
+Node requirement:
+
+- Node.js `20.9.0` or newer
+
+1. Install dependencies:
 
 ```bash
-cd backend
-cp .env.example .env
 npm install
+```
+
+2. Start the development server:
+
+```bash
 npm run dev
 ```
 
-Backend runs by default on `http://localhost:4000`.
+3. Open the URL printed in the terminal.
 
-## Run Frontend
+If port `3000` is already in use, the app will automatically try the next available port such as `3001`.
+
+To force a specific port:
 
 ```bash
-cd frontend
-cp .env.local.example .env.local
-npm install
-npm run dev
+PORT=3001 npm run dev
 ```
 
-Frontend runs by default on `http://localhost:3000`.
+## App Routes
+
+- `/` redirects to `/dashboard`
+- `/dashboard`
+- `/point-of-sale`
+- `/products`
+- `/accessories`
+- `/repair-parts`
+- `/low-stock`
+- `/sales-history`
+- `/suppliers`
+- `/customers`
 
 ## API Endpoints
 
 - `GET /api/health`
-- `GET /api/products?query=&sort=&lowStockOnly=&threshold=`
-- `POST /api/products`
-- `PATCH /api/products/:id`
-- `POST /api/products/:id/adjust`
-- `DELETE /api/products/:id`
+- `GET /api/bootstrap`
+- `GET /api/notifications/stream`
+- `GET /api/search?q=...`
+- `POST /api/items/:collection`
+- `PUT /api/items/:collection/:id`
+- `DELETE /api/items/:collection/:id`
+- `POST /api/suppliers`
+- `POST /api/checkout`
+
+Valid inventory collections:
+
+- `products`
+- `accessories`
+- `parts`
 
 ## Notes
 
-- Barcode scanner support works through the search field because most USB scanners act like a keyboard.
-- Phone camera barcode scanning is not included in v1 yet, but the frontend is structured so it can be added later with a library such as `html5-qrcode`.
-- Data is stored in `backend/data.sqlite`, so the same inventory can be shared by multiple devices on the same backend.
-# telecom-inventory
+- Data is persisted to [data/store.json](/home/munna/DevOps/Projects/telecom-inventory/data/store.json).
+- The admin dashboard listens to `/api/notifications/stream` for live sale alerts.
+- This setup is intentionally lightweight, so it is easy to upgrade later to MongoDB, PostgreSQL, authentication, invoices, or multi-user support.

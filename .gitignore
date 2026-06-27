@@ -1,8 +1,4 @@
-node_modules
 .next
-dist
-coverage
-*.log
-.env
-.env.local
-backend/data.sqlite
+node_modules
+npm-debug.log*
+.DS_Store
